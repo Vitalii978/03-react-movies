@@ -7,19 +7,22 @@ interface MovieSearchResponse {
   total_results: number;
   total_pages: number;
 }
-const link:string = 'https://vercel-api-proxy-six-fawn.vercel.app/api/proxy';
+
+const API_KEY = import.meta.env.VITE_API_KEY;
+const BASE_URL = "https://api.themoviedb.org/3/search/movie";
 
 export default async function getMovies(searchText: string, page: number = 1) {
- 
-    const response = await axios.get<MovieSearchResponse>(link, {
-      params: {
-        source: 'tmdb',
-        query: searchText,
-        include_adult: false,
-        language: 'en-US',
-        page: page,
-      },
-    });
-    return response.data.results;
+  const response = await axios.get<MovieSearchResponse>(BASE_URL, {
+    headers: {
+      Authorization: `Bearer ${API_KEY}`,  // используйте JWT-токен здесь
+    },
+    params: {
+      query: searchText,
+      include_adult: false,
+      language: 'en-US',
+      page,
+    },
+  });
 
+  return response.data.results;
 }

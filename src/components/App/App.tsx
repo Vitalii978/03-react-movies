@@ -1,51 +1,54 @@
-import css from './App.module.css';
-import { useState } from 'react';
-import toast, { Toaster } from "react-hot-toast";
-import SearchBar from '../SearchBar/SearchBar';
+import { useState } from "react";
+import SearchBar from "../SearchBar/SearchBar";
 import getMovies from "../../services/movieService";
-import type { Movie } from "../../types/movie";
-import MovieGrid from "../MovieGrid/MovieGrid";
-import MovieModal from "../MovieModal/MovieModal";
 import Loader from "../Loader/Loader";
 import ErrorMessage from "../ErrorMessage/ErrorMessage";
+import toast, { Toaster } from "react-hot-toast";
+import MovieGrid from "../MovieGrid/MovieGrid";
+import MovieModal from "../MovieModal/MovieModal";
+import type { Movie } from "../../types/movie";
+import css from "./App.module.css";
 
+const notify = () => toast.error("No movies found for your request.");
 
 export default function App() {
-  const [movies, setMovies] = useState<Movie[]>([]);
-  const [error, setError] = useState<Error | null>(null);
   const [loader, setLoader] = useState(false);
-  const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
+  const [error, setError] = useState<Error | null>(null);
+  const [movies, setMovies] = useState<Movie[]>([]);
+  const [activeMovie, setActiveMovie] = useState<Movie | null>(null);
 
-const handleSearch = async (query: string) => {
-  console.log("SEARCH QUERY:", query);
+  const handleSearch = async (userSearch: string) => {
+    setError(null);
+    setLoader(true);
+    setMovies([]);
     try {
-      setError(null);
-      setLoader(true);
-      const results = await getMovies(query)
-
-      if(results.length === 0) {
-         toast.error("No movies found.");
+      const response = await getMovies(userSearch);
+      if (response.length === 0) {
+        setMovies([]);
+        notify();
+      } else {
+        setMovies(response);
       }
-      setMovies(results); 
-    } catch(err) {
-      setError("Something went wrong.");
-      toast.error("Something went wrong.");
+    } catch (err) {
+      setMovies([]);
+      setError(err as Error);
+      console.error(err);
     } finally {
       setLoader(false);
-    }    
-};
+    }
+  };
 
   return (
     <div className={css.app}>
       <SearchBar onSubmit={handleSearch} />
       <MovieGrid
         movies={movies}
-        onSelect={(movie) => setSelectedMovie(movie)}
+        onSelect={(movie) => setActiveMovie(movie)}
       />
-      {selectedMovie && (
+      {activeMovie && (
         <MovieModal
-          movie={selectedMovie}
-          onClose={() => setSelectedMovie(null)}
+          movie={activeMovie}
+          onClose={() => setActiveMovie(null)}
         />
       )}
       {loader && <Loader />}

@@ -9,6 +9,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
+
 }
 
 .modal {
@@ -22,6 +23,7 @@
     max-width: 800px;
     height: 80vh;
     min-height: 300px;
+
 }
 
 .image {
